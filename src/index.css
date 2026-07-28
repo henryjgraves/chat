@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+html {
+  background-color: black
+}
+
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text; /* For Safari compatibility */
+  color: transparent; 
+}
