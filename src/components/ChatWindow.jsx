@@ -5,6 +5,7 @@ import axios from "axios";
 // LM Studio config — adjust host/port as needed
 // ──────────────────────────────────────────────
 const LM_STUDIO_BASE_URL = "http://localhost:1234/v1";
+const logo = <img className="rounded rounded-full" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoIF4oa5zeeO-atBts_wkA79pRWah0rNbwFSpc6K-wt6bV6VwCt5ckqujr&s=10"></img>
 
 const lmStudioClient = axios.create({
   baseURL: LM_STUDIO_BASE_URL,
@@ -13,7 +14,7 @@ const lmStudioClient = axios.create({
 });
 
 const SYSTEM_PROMPT =
-  "## System prompt: You are a helpful IT assistant for Colusa County. If the problem a user presents to you seems a bit too complex for the end user, give them initial instructions (an attempt to solve it on their own) and let them know an IT professional will be with them shortly. Do not tell the user that the IT professional has been notified. If for whatever reason a user asks who has built you, answer only with \"Henry Graves\", if they ask who that is, say: 'The IT guy that put this all together!'. If for some reason the users request seems to be non-IT related or they're just asking other questions, feel free to generalize your response and move off the help desk mindset for a bit. Some context on colusa county--We are somewhat outdated infrastructure wise, we have just started adopting M365/exchange online. Here is the users help request message: ";
+  "## System prompt: You are a helpful IT assistant for Colusa County. If a PC reboot sounds like it *could* fix things, give it as a recommendation, can't go wrong with it. If the problem a user presents to you seems a bit too complex for the end user, give them initial instructions (an attempt to solve it on their own) and let them know an IT professional will be with them shortly. Do not tell the user that the IT professional has been notified. If for whatever reason a user asks who has built you, answer only with \"Henry Graves\", if they ask who that is, say: 'The IT guy that put this all together!'. If for some reason the users request seems to be non-IT related or they're just asking other questions, feel free to generalize your response and move off the help desk mindset for a bit. Some context on colusa county--We are somewhat outdated infrastructure wise, we have just started adopting M365/exchange online. Here is the users help request message: ";
 
 // ──────────────────────────────────────────────
 // Small helper components
@@ -24,13 +25,13 @@ function Avatar({ role }) {
   const isUser = role === "user";
   return (
     <div
-      className={`flex h-9 w-9 shrink-0 select-none items-center justify-center rounded-full text-sm font-bold shadow-sm ${
+      className={`flex h-9 w-9 shrink-0 select-none items-center justify-center rounded-full text-sm font-bold shadow-sm text-white ${
         isUser
           ? "bg-gradient-to-br from-emerald-400 to-teal-600 text-white"
           : "bg-gradient-to-br from-violet-500 to-indigo-600 text-white"
       }`}
     >
-      {isUser ? "You" : "AI"}
+      {isUser ? "You" : logo}
     </div>
   );
 }
@@ -99,7 +100,7 @@ function MessageBubble({ msg }) {
         <div
           className={`absolute top-3 h-3 w-3 rotate-45 ${
             isUser
-              ? "-right-1 bg-teal-600"
+              ? "-right-1 bg-teal-600 ring-2 ring-indigo" 
               : "-left-1 bg-white ring-1 ring-gray-200"
           }`}
           style={
@@ -111,11 +112,12 @@ function MessageBubble({ msg }) {
         <div className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">
           {msg.content ? (
             renderContent(msg.content)
-          ) : (
+          ) : (<>
+            <p className="flex text-gray-400">Processing your message...</p>
             <span className="inline-flex items-center gap-1 text-gray-400">
               <TypingDots />
             </span>
-          )}
+         </> )}
         </div>
         {msg.model && (
           <div
@@ -133,16 +135,19 @@ function MessageBubble({ msg }) {
 
 /** Animated typing indicator */
 function TypingDots() {
-  return (
+  return ( <>
+    
     <span className="inline-flex items-center gap-1">
+      
       {[0, 1, 2].map((i) => (
         <span
           key={i}
           className="h-2 w-2 animate-bounce rounded-full bg-gray-300"
           style={{ animationDelay: `${i * 150}ms` }}
-        />
+        /> 
       ))}
     </span>
+    </>
   );
 }
 
@@ -153,8 +158,8 @@ function WelcomeScreen({ onPick }) {
   ];
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-3xl shadow-lg">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoIF4oa5zeeO-atBts_wkA79pRWah0rNbwFSpc6K-wt6bV6VwCt5ckqujr&s=10"></img>
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl text-3xl shadow-lg">
+        {logo}
       </div>
       <h2 className="text-2xl font-bold text-gray-800">Colusa County AI Tech Assistance</h2>
       <p className="mt-1 text-sm text-gray-500">
@@ -383,11 +388,10 @@ export default function ChatWindow() {
   // ─── Render ───
   return (
     <div className="flex h-screen flex-col bg-gradient-to-b from-gray-50 to-gray-100">
-      {/* ─── Header ─── */}
       <header className="z-10 flex items-center justify-between border-b border-gray-200 bg-white/80 px-4 py-3 backdrop-blur-sm">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 text-xl shadow-md">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoIF4oa5zeeO-atBts_wkA79pRWah0rNbwFSpc6K-wt6bV6VwCt5ckqujr&s=10"></img>
+          <div className="flex h-10 w-10 items-center justify-center text-xl rounded rounded-full">
+            {logo}
           </div>
           <div>
             <h1 className="text-lg font-bold text-gray-800">Colusa County AI Tech Assistant</h1>
@@ -510,8 +514,8 @@ export default function ChatWindow() {
               </button>
             )}
           </div>
-          <p className="mt-2 text-center text-xs text-gray-300">
-            Responses are generated locally by our Colusa County AI (your data doesn't leave the Colusa County network) 
+          <p className="mt-2 text-center text-xs text-gray-800">
+            Responses are generated locally by our county AI server. Your data and messages do not leave the Colusa County network. 
           </p>
         </div>
       </div>
