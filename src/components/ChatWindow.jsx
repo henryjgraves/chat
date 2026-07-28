@@ -1,26 +1,18 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 
-// ──────────────────────────────────────────────
-// LM Studio config — adjust host/port as needed
-// ──────────────────────────────────────────────
 const LM_STUDIO_BASE_URL = "http://localhost:1234/v1";
 const logo = <img className="rounded rounded-full" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoIF4oa5zeeO-atBts_wkA79pRWah0rNbwFSpc6K-wt6bV6VwCt5ckqujr&s=10"></img>
 
 const lmStudioClient = axios.create({
   baseURL: LM_STUDIO_BASE_URL,
   headers: { "Content-Type": "application/json" },
-  timeout: 120_000, // LLMs can take a while…
+  timeout: 120_000,
 });
 
 const SYSTEM_PROMPT =
-  "## System prompt: You are a helpful IT assistant for Colusa County. If a PC reboot sounds like it *could* fix things, give it as a recommendation, can't go wrong with it. If the problem a user presents to you seems a bit too complex for the end user, give them initial instructions (an attempt to solve it on their own) and let them know an IT professional will be with them shortly. Do not tell the user that the IT professional has been notified. If for whatever reason a user asks who has built you, answer only with \"Henry Graves\", if they ask who that is, say: 'The IT guy that put this all together!'. If for some reason the users request seems to be non-IT related or they're just asking other questions, feel free to generalize your response and move off the help desk mindset for a bit. Some context on colusa county--We are somewhat outdated infrastructure wise, we have just started adopting M365/exchange online. Here is the users help request message: ";
+  "## System prompt: You are a helpful IT assistant for Colusa County. If a PC reboot sounds like it *could* fix things, give it as a recommendation, can't go wrong with it. If the problem a user presents to you seems a bit too complex for the end user, give them initial instructions (an attempt to solve it on their own) and let them know an IT professional will be with them shortly, either Henry, Andrew, Benny or Sam. Do not tell the user that the IT professional has been notified. If for whatever reason a user asks who has built you, answer by explaining that Henry Graves set up this app, if they ask who that is, say: 'The IT guy that put this all together!'. If for some reason the users request seems to be non-IT related or they're just asking other questions, feel free to generalize your response and move off the help desk mindset for a bit. Some context on colusa county--We are somewhat outdated infrastructure wise, we have just started adopting M365/exchange online. Here is the users help request message: ";
 
-// ──────────────────────────────────────────────
-// Small helper components
-// ──────────────────────────────────────────────
-
-/** Avatar bubble */
 function Avatar({ role }) {
   const isUser = role === "user";
   return (
@@ -36,11 +28,9 @@ function Avatar({ role }) {
   );
 }
 
-/** Renders a single message — very lightweight markdown-ish formatting */
 function MessageBubble({ msg }) {
   const isUser = msg.role === "user";
 
-  // Basic formatting: code blocks, inline code, bold, line breaks
   const renderContent = (text) => {
     const parts = [];
     // Split out fenced code blocks
@@ -189,11 +179,8 @@ function WelcomeScreen({ onPick }) {
   );
 }
 
-// ──────────────────────────────────────────────
-// Main Component
-// ──────────────────────────────────────────────
-
 export default function ChatWindow() {
+
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -476,7 +463,7 @@ export default function ChatWindow() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Send a message…  (Enter to send, Shift+Enter for newline)"
+                placeholder="Send a message…"
                 rows={1}
                 className="max-h-40 w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 pr-12 text-[15px] text-gray-800 placeholder-gray-400 outline-none transition-all focus:border-violet-300 focus:bg-white focus:ring-2 focus:ring-violet-100"
                 style={{
@@ -515,7 +502,7 @@ export default function ChatWindow() {
             )}
           </div>
           <p className="mt-2 text-center text-xs text-gray-800">
-            Responses are generated locally by our county AI server. Your data and messages do not leave the Colusa County network. 
+            Responses are generated locally by our dedicated AI server. Your data and messages do not leave the Colusa County network. 
           </p>
         </div>
       </div>
