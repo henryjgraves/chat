@@ -1,17 +1,24 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 
-const LM_STUDIO_BASE_URL = "http://localhost:1234/v1";
+const LM_STUDIO_API_TOKEN = ""
+const LM_STUDIO_BASE_URL = "http://localhost:1234/api/v1";
 const logo = <img className="rounded rounded-full" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoIF4oa5zeeO-atBts_wkA79pRWah0rNbwFSpc6K-wt6bV6VwCt5ckqujr&s=10"></img>
 
 const lmStudioClient = axios.create({
   baseURL: LM_STUDIO_BASE_URL,
-  headers: { "Content-Type": "application/json" },
+   headers: {
+            "Content-Type": "application/json",
+            ...(LM_STUDIO_API_TOKEN && {Authorization: `Bearer ${LM_STUDIO_API_TOKEN}`})
+          },
   timeout: 120_000,
 });
 
-const SYSTEM_PROMPT =
-  "## System prompt: You are a helpful IT assistant for Colusa County. If a PC reboot sounds like it *could* fix things, give it as a recommendation, can't go wrong with it. If the problem a user presents to you seems a bit too complex for the end user, give them initial instructions (an attempt to solve it on their own) and let them know an IT professional will be with them shortly, either Henry, Andrew, Benny or Sam. Do not tell the user that the IT professional has been notified. If for whatever reason a user asks who has built you, answer by explaining that Henry Graves set up this app, if they ask who that is, say: 'The IT guy that put this all together!'. If for some reason the users request seems to be non-IT related or they're just asking other questions, feel free to generalize your response and move off the help desk mindset for a bit. Some context on colusa county--We are somewhat outdated infrastructure wise, we have just started adopting M365/exchange online. Here is the users help request message: ";
+// const SYSTEM_PROMPT =
+//   "## System prompt: You are a helpful IT assistant for Colusa County. If a PC reboot sounds like it *could* fix things, give it as a recommendation, can't go wrong with it. If the problem a user presents to you seems a bit too complex for the end user, give them initial instructions (an attempt to solve it on their own) and let them know an IT professional will be with them shortly, either Henry, Andrew, Benny or Sam. Do not tell the user that the IT professional has been notified. If for whatever reason a user asks who has built you, answer by explaining that Henry Graves set up this app, if they ask who that is, say: 'The IT guy that put this all together!'. If for some reason the users request seems to be non-IT related or they're just asking other questions, feel free to generalize your response and move off the help desk mindset for a bit. Some context on colusa county--We are somewhat outdated infrastructure wise, we have just started adopting M365/exchange online. Here is the users help request message: ";
+
+const SYSTEM_PROMPT = 
+"You are a general-purpose AI assistant. Your name is Jarvis.";
 
 function Avatar({ role }) {
   const isUser = role === "user";
@@ -23,7 +30,7 @@ function Avatar({ role }) {
           : "bg-gradient-to-br from-violet-500 to-indigo-600 text-white"
       }`}
     >
-      {isUser ? "You" : logo}
+      {isUser ? "You" : "Jarvis"}
     </div>
   );
 }
@@ -149,11 +156,10 @@ function WelcomeScreen({ onPick }) {
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl text-3xl shadow-lg">
-        {logo}
       </div>
-      <h2 className="text-2xl font-bold text-gray-800">Colusa County AI Tech Assistance</h2>
+      <h2 className="text-2xl font-bold text-gray-800">J St. Home AI</h2>
       <p className="mt-1 text-sm text-gray-500">
-        Powered by Colusa County AI
+        Powered by J St. Studio
       </p>
       <div className="mt-8 grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-1">
         {suggestions.map((s) => (
@@ -173,11 +179,12 @@ function WelcomeScreen({ onPick }) {
         ))}
       </div>
       <div className="text-4xl color-red-100">
-        How can I help you today?
+        Ready
       </div>
     </div>
   );
 }
+
 
 export default function ChatWindow() {
 
@@ -246,18 +253,24 @@ export default function ChatWindow() {
         // We use raw fetch here because axios doesn't natively support
         // streaming response bodies in the browser.  The request payload
         // matches LM Studio's OpenAI-compatible /chat/completions endpoint.
-        const response = await fetch(`${LM_STUDIO_BASE_URL}/chat/completions`, {
+
+        // update to send message to custom agent that has tooling
+        const response = await fetch(`${LM_STUDIO_BASE_URL}/chat`, { 
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...(LM_STUDIO_API_TOKEN && {Authorization: `Bearer ${LM_STUDIO_API_TOKEN}`})
           },
           signal: controller.signal,
           body: JSON.stringify({
-            model: selectedModel || "local-model",
-            messages: apiMessages,
+            model: selectedModel || "google/gemma-4-e4b",
+            input: apiMessages.map(m => `${m.role}: ${m.content}`).join('\n'),
             temperature: 0.7,
-            max_tokens: -1, // -1 = no limit (LM Studio convention)
+            context_length: 10000,
             stream: true,
+            integrations: [
+              { type: 'plugin', id: 'mcp/searxng'}
+            ]
           }),
         });
 
@@ -292,9 +305,13 @@ export default function ChatWindow() {
 
             try {
               const json = JSON.parse(payload);
-              const delta = json.choices?.[0]?.delta?.content;
+      
+
+              // const delta = json.choices?.[0]?.delta?.content;
+              const delta = json.content;
               if (delta) {
-                assistantContent += delta;
+                let content = delta.replace(/<think[^>]*>[\s\S]*?<\/think>/gi, '')
+                assistantContent += content;
                 // Update only the last (placeholder) message
                 setMessages((prev) => {
                   const copy = [...prev];
@@ -378,19 +395,19 @@ export default function ChatWindow() {
       <header className="z-10 flex items-center justify-between border-b border-gray-200 bg-white/80 px-4 py-3 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center text-xl rounded rounded-full">
-            {logo}
+            {/* {logo} */}
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-800">Colusa County AI Tech Assistant</h1>
+            <h1 className="text-lg font-bold text-gray-800">J St. Home AI</h1>
             <p className="text-xs text-gray-400">
-              {isStreaming ? "Generating…" : "Ready"} · {selectedModel ? `AI model loaded: ${selectedModel}` : "No model loaded"}
+              {isStreaming ? "Generating…" : "Ready"} · {selectedModel ? `AI model loaded` : "No model loaded"}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           {/* Model selector */}
-          {/* {models.length > 0 && (
+          {models.length > 0 && (
             <select
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
@@ -402,10 +419,10 @@ export default function ChatWindow() {
                 </option>
               ))}
             </select>
-          )} */}
+          )}
 
           {/* Regenerate */}
-          {/* <button
+          <button
             onClick={regenerate}
             disabled={messages.length === 0 || isStreaming}
             className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-30"
@@ -414,7 +431,7 @@ export default function ChatWindow() {
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992V4.356M4.018 13.65h-4.992v4.992M4.985 4.984A8 8 0 0119.014 9.348M3.0 13.652a8 8 0 0011.33 7.245" />
             </svg>
-          </button> */}
+          </button>
 
           {/* Clear chat */}
           <button
@@ -501,9 +518,7 @@ export default function ChatWindow() {
               </button>
             )}
           </div>
-          <p className="mt-2 text-center text-xs text-gray-800">
-            Responses are generated locally by our dedicated AI server. Your data and messages do not leave the Colusa County network. 
-          </p>
+          
         </div>
       </div>
     </div>
