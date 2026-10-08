@@ -306,10 +306,9 @@ export default function ChatWindow() {
             try {
               const json = JSON.parse(payload);
       
-
               // const delta = json.choices?.[0]?.delta?.content;
               const delta = json.content;
-              if (delta) {
+              if (delta && json.type == "message.delta") {
                 let content = delta.replace(/<think[^>]*>[\s\S]*?<\/think>/gi, '')
                 assistantContent += content;
                 // Update only the last (placeholder) message
@@ -321,6 +320,8 @@ export default function ChatWindow() {
                   };
                   return copy;
                 });
+              } else {
+                // console.log("thinking")
               }
             } catch {
               // Partial JSON — ignore, will complete on next chunk
