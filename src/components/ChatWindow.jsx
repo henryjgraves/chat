@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 
-const LM_STUDIO_API_TOKEN = ""
+const LM_STUDIO_API_TOKEN = "sk-lm-hT11S2NP:adxND6Ex360xm0A6OZco"
 const LM_STUDIO_BASE_URL = "http://10.96.1.133:1234/api/v1";
 const logo = <img className="rounded rounded-full" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoIF4oa5zeeO-atBts_wkA79pRWah0rNbwFSpc6K-wt6bV6VwCt5ckqujr&s=10"></img>
 
