@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 
 const LM_STUDIO_API_TOKEN = ""
-const LM_STUDIO_BASE_URL = "http://localhost:1234/api/v1";
+const LM_STUDIO_BASE_URL = "http://10.96.1.133:1234/api/v1";
 const logo = <img className="rounded rounded-full" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoIF4oa5zeeO-atBts_wkA79pRWah0rNbwFSpc6K-wt6bV6VwCt5ckqujr&s=10"></img>
 
 const lmStudioClient = axios.create({
@@ -18,7 +18,7 @@ const lmStudioClient = axios.create({
 //   "## System prompt: You are a helpful IT assistant for Colusa County. If a PC reboot sounds like it *could* fix things, give it as a recommendation, can't go wrong with it. If the problem a user presents to you seems a bit too complex for the end user, give them initial instructions (an attempt to solve it on their own) and let them know an IT professional will be with them shortly, either Henry, Andrew, Benny or Sam. Do not tell the user that the IT professional has been notified. If for whatever reason a user asks who has built you, answer by explaining that Henry Graves set up this app, if they ask who that is, say: 'The IT guy that put this all together!'. If for some reason the users request seems to be non-IT related or they're just asking other questions, feel free to generalize your response and move off the help desk mindset for a bit. Some context on colusa county--We are somewhat outdated infrastructure wise, we have just started adopting M365/exchange online. Here is the users help request message: ";
 
 const SYSTEM_PROMPT = 
-"You are a general-purpose AI assistant. Your name is Jarvis.";
+"";
 
 function Avatar({ role }) {
   const isUser = role === "user";
